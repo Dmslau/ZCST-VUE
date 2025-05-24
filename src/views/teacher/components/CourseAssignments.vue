@@ -49,10 +49,10 @@
       :before-close="handleClose"
       class="assignment-dialog"
     >
-      <el-form 
-        :model="assignmentForm" 
-        :rules="rules" 
-        ref="assignmentFormRef" 
+      <el-form
+        :model="assignmentForm"
+        :rules="rules"
+        ref="assignmentFormRef"
         label-width="120px"
         class="assignment-form"
       >
@@ -69,10 +69,10 @@
               <el-radio label="scheduled">定时发布</el-radio>
             </el-radio-group>
         </el-form-item>
-          
-          <el-form-item 
+
+          <el-form-item
             v-if="assignmentForm.publishType === 'scheduled'"
-            label="发布时间" 
+            label="发布时间"
             prop="publishTime"
           >
             <el-date-picker
@@ -84,7 +84,7 @@
               :disabled-date="disablePastDates"
             />
           </el-form-item>
-          
+
           <el-form-item label="截止日期" prop="deadline">
             <el-date-picker
               v-model="assignmentForm.deadline"
@@ -100,7 +100,7 @@
         <!-- 提交设置部分 -->
         <div class="form-section">
           <div class="section-title">提交设置</div>
-          
+
           <!-- 添加小组作业设置 -->
           <el-form-item label="作业类型">
             <el-radio-group v-model="assignmentForm.isGroupWork">
@@ -110,12 +110,12 @@
           </el-form-item>
 
           <!-- 当选择小组作业时显示小组人数设置 -->
-          <el-form-item 
-            v-if="assignmentForm.isGroupWork" 
+          <el-form-item
+            v-if="assignmentForm.isGroupWork"
             label="小组人数"
             prop="groupMemberLimit"
           >
-            <el-input-number 
+            <el-input-number
               v-model="assignmentForm.groupMemberLimit"
               :min="2"
               :max="10"
@@ -168,10 +168,10 @@
         <!-- 作业内容部分 -->
         <div class="form-section">
           <div class="section-title">作业内容</div>
-          
+
           <!-- 题目列表 -->
-          <div 
-            v-for="(question, index) in assignmentForm.questions" 
+          <div
+            v-for="(question, index) in assignmentForm.questions"
             :key="index"
             class="question-item"
           >
@@ -180,8 +180,20 @@
                 <span class="question-title">
                   {{ assignmentForm.questions.length === 1 ? '题目' : `第 ${index + 1} 题` }}
                 </span>
-                <el-select 
-                  v-model="question.type" 
+                <el-input-number
+                  v-model="question.score"
+                  :min="0"
+                  :max="100"
+                  :step="5"
+                  size="small"
+                  class="score-input"
+                >
+                  <template #prefix>
+                    <span class="score-prefix">分值：</span>
+                  </template>
+                </el-input-number>
+                <el-select
+                  v-model="question.type"
                   size="small"
                   class="question-type-select"
                   @change="() => watchQuestionType(question)"
@@ -199,10 +211,11 @@
                   @change="handleAutoGradingChange(question)"
                 />
               </div>
+
               <div class="question-actions">
-                <el-button 
+                <el-button
                   v-if="index > 0"
-                  type="danger" 
+                  type="danger"
                   link
                   @click="removeQuestion(index)"
                 >
@@ -212,7 +225,7 @@
               </div>
             </div>
 
-            <el-form-item 
+            <el-form-item
               :prop="`questions.${index}.content`"
               :rules="{ required: true, message: '请输入题目内容', trigger: 'blur' }"
             >
@@ -234,8 +247,8 @@
               </el-upload>
                   </div>
                   <div class="editor-container">
-                    <div 
-                      v-show="!editorReady || !dialogVisible" 
+                    <div
+                      v-show="!editorReady || !dialogVisible"
                       class="editor-placeholder"
                     ></div>
                     <Editor
@@ -266,8 +279,8 @@
 
             <!-- 选项设置部分（单选题和多选题） -->
             <div v-if="question.type === 'single' || question.type === 'multiple'" class="options-section">
-              <div 
-                v-for="(option, optionIndex) in question.options" 
+              <div
+                v-for="(option, optionIndex) in question.options"
                 :key="optionIndex"
                 class="option-item"
               >
@@ -279,9 +292,9 @@
                     {{ String.fromCharCode(65 + optionIndex) }}
                 </template>
                 </el-input>
-                <el-button 
-                  type="danger" 
-                  circle 
+                <el-button
+                  type="danger"
+                  circle
                   size="small"
                   @click="removeOption(question, optionIndex)"
                   :disabled="question.options.length <= 2"
@@ -290,8 +303,8 @@
                   </el-button>
               </div>
               <div class="options-actions">
-                <el-button 
-                  type="primary" 
+                <el-button
+                  type="primary"
                   size="small"
                   @click="addOption(question)"
                   :disabled="question.options.length >= 6"
@@ -305,7 +318,7 @@
             <template v-if="question.type === 'blank'">
               <div class="blank-settings">
                 <el-form-item label="填空数量">
-                  <el-input-number 
+                  <el-input-number
                     v-model="question.blankCount"
                     :min="1"
                     :max="10"
@@ -330,7 +343,7 @@
 
               <!-- 问答题答案 -->
               <template v-else-if="question.type === 'essay'">
-                <el-form-item 
+                <el-form-item
                   :label="getAnswerLabel(question)"
                   :prop="`questions.${index}.answer`"
                   :rules="getAnswerRules(question)"
@@ -350,8 +363,8 @@
                   <!-- 单选题答案 -->
                   <template v-if="question.type === 'single'">
                     <el-radio-group v-model="question.answer">
-                      <div 
-                        v-for="(option, optIndex) in question.options" 
+                      <div
+                        v-for="(option, optIndex) in question.options"
                         :key="optIndex"
                         class="answer-option"
                       >
@@ -365,8 +378,8 @@
                   <!-- 多选题答案 -->
                   <template v-else>
                     <el-checkbox-group v-model="question.answer">
-                      <div 
-                        v-for="(option, optIndex) in question.options" 
+                      <div
+                        v-for="(option, optIndex) in question.options"
                         :key="optIndex"
                         class="answer-option"
                       >
@@ -376,7 +389,7 @@
                     </div>
                     </el-checkbox-group>
                   </template>
-                </div> 
+                </div>
               </template>
 
               <!-- 编程题答案部分 -->
@@ -411,14 +424,14 @@
                     </el-tab-pane>
 
                     <!-- 参考代码（仅在需要公布答案时显示） -->
-                    <el-tab-pane 
+                    <el-tab-pane
                       v-if="assignmentForm.answerVisibility !== 'never'"
-                      label="参考代码" 
+                      label="参考代码"
                       name="answer"
                     >
                       <div class="code-editor-container">
                         <div class="code-description">
-                          {{ question.enableAutoGrading ? 
+                          {{ question.enableAutoGrading ?
                             '用于自动判定的标准代码，需要能通过所有测试用例。' :
                             '作为参考的示例代码，学生可以在答案公布后查看。'
                           }}
@@ -443,28 +456,28 @@
                         </div>
                       </div>
                     </el-tab-pane>
-                    
+
                     <!-- 测试用例（仅在自动批改时显示） -->
-                    <el-tab-pane 
+                    <el-tab-pane
                       v-if="question.enableAutoGrading"
-                      label="测试用例" 
+                      label="测试用例"
                       name="testcases"
                     >
                       <div class="testcases">
                         <div class="code-description">
                           添加测试用例来验证学生提交的代码是否正确。每个测试用例包含输入数据和期望的输出结果。
                         </div>
-                        <div 
-                          v-for="(testcase, testIndex) in question.testcases" 
+                        <div
+                          v-for="(testcase, testIndex) in question.testcases"
                           :key="testIndex"
                           class="testcase-item"
                         >
                           <div class="testcase-header">
                             <span class="testcase-title">测试用例 {{ testIndex + 1 }}</span>
-                            <el-button 
+                            <el-button
                               v-if="question.testcases.length > 1"
-                              type="danger" 
-                              circle 
+                              type="danger"
+                              circle
                               size="small"
                               @click="removeTestcase(question, testIndex)"
                             >
@@ -496,7 +509,7 @@
             </div>
 
             <!-- 添加分数设置 -->
-            <el-form-item 
+            <el-form-item
               v-if="assignmentForm.enableAutoGrading"
               :label="`题目分值`"
               :prop="`questions.${index}.score`"
@@ -535,8 +548,8 @@
       title="作业提交情况"
       width="80%"
     >
-      <el-table 
-        :data="submissions" 
+      <el-table
+        :data="submissions"
         v-loading="submissionsLoading"
         style="width: 100%"
       >
@@ -556,8 +569,8 @@
         </el-table-column>
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
-            <el-button 
-              type="primary" 
+            <el-button
+              type="primary"
               size="small"
               @click="viewSubmissionDetail(row)"
             >
@@ -1249,6 +1262,16 @@
   padding: 0;
   width: 100% !important;
 }
+
+.score-input {
+  width: 130px;
+  margin: 0 12px;
+}
+
+.score-prefix {
+  color: #606266;
+  font-size: 14px;
+}
 </style>
 
 <script>
@@ -1508,7 +1531,7 @@ export default {
             const canvas = document.createElement('canvas')
             let width = img.width
             let height = img.height
-            
+
             // 如果图片大于 1000px，等比例缩小
             const maxSize = 1000
             if (width > maxSize || height > maxSize) {
@@ -1525,7 +1548,7 @@ export default {
             canvas.height = height
             const ctx = canvas.getContext('2d')
             ctx.drawImage(img, 0, 0, width, height)
-            
+
             // 压缩为 JPEG 格式，质量 0.7
             resolve(canvas.toDataURL('image/jpeg', 0.7))
           }
@@ -1540,12 +1563,12 @@ export default {
     // 修改图片上传处理函数
     const handleImageUpload = async (file) => {
       if (!file) return
-      
+
       if (file.raw.size > MAX_FILE_SIZE) {
         ElMessage.error('图片大小不能超过 5MB')
         return
       }
-      
+
       imageUploading.value = true
       try {
         const base64 = await compressImage(file.raw)
@@ -1578,7 +1601,7 @@ export default {
         ElMessage.error('文件大小不能超过 5MB')
         return
       }
-      
+
       const reader = new FileReader()
       reader.onload = () => {
         assignmentForm.value.questions[questionIndex].attachedFiles.push({
@@ -1618,13 +1641,13 @@ export default {
     const renderContent = (content) => {
       if (!content) return ''
       let html = content
-      
+
       // 替换图片标记
       html = html.replace(
         /\[image\](.*?)\[\/image\]/g,
         (match, base64) => `<img src="${base64}" style="max-width:100%;margin:8px 0;" />`
       )
-      
+
       // 替换文件标记
       html = html.replace(
         /\[file\](.*?):(.*?)\[\/file\]/g,
@@ -1635,7 +1658,7 @@ export default {
           </div>
         `
       )
-      
+
       return html
     }
 
@@ -1670,18 +1693,18 @@ export default {
     // 修改提交表单的处理函数
     const submitForm = async () => {
       if (!assignmentFormRef.value) return
-      
+
       try {
         await assignmentFormRef.value.validate()
         submitting.value = true
         const formData = { ...assignmentForm.value }
-        
+
         // 构建要提交的数据
         const submitData = {
           title: formData.title,
           deadline: formData.deadline,
-          publish_time: formData.publishType === 'immediate' 
-            ? new Date().toISOString() 
+          publish_time: formData.publishType === 'immediate'
+            ? new Date().toISOString()
             : formData.publishTime,
           courseId: props.courseId,
               course: {
@@ -1713,14 +1736,14 @@ export default {
           // 编辑作业时保留原有的课程信息
           const response = await axios.get(`/api/assignments/${formData.assignmentId}`)
           submitData.course = response.data.course || { courseId: props.courseId }
-          
+
           await axios.put(`/api/assignments/${formData.assignmentId}`, submitData)
           ElMessage.success('作业更新成功')
             } else {
           await axios.post('/api/assignments', submitData)
           ElMessage.success('作业创建成功')
             }
-            
+
               dialogVisible.value = false
         loadAssignments()
           } catch (error) {
@@ -1777,7 +1800,7 @@ export default {
           content: '',
           answer: '',
           showAnswer: false,
-          score: 0,
+          score: 0, // 添加默认分值
           blanks: [], // 初始化为空数组
           blankCount: 1, // 添加填空数量字段
           testcases: [{ input: '', output: '' }],
@@ -1814,9 +1837,9 @@ export default {
       } else {
         question.answer = '' // 其他题型初始化为空字符串
       }
-      
+
       question.enableAutoGrading = false
-      
+
       if (question.type === 'blank') {
         question.blanks = [{
           answer: '',
@@ -1842,7 +1865,7 @@ export default {
 
     // 切换答案显示状态
     const toggleAnswer = (index) => {
-      assignmentForm.value.questions[index].showAnswer = 
+      assignmentForm.value.questions[index].showAnswer =
         !assignmentForm.value.questions[index].showAnswer
     }
 
@@ -1878,14 +1901,14 @@ export default {
       if (question.type === 'programming') {
         return '请输入题目要求'
       }
-      return assignmentForm.value.questions.length === 1 ? 
-        '请输入题目内容' : 
+      return assignmentForm.value.questions.length === 1 ?
+        '请输入题目内容' :
         `请输入第 ${index + 1} 题内容`
     }
 
     // 编辑器实例，必须用 shallowRef
     const editorRef = shallowRef({})
-    
+
     // 内容 HTML
     const valueHtml = ref('')
 
@@ -2132,7 +2155,7 @@ export default {
     const presetCodePlaceholder = `// 示例：
 function solution() {
   // 在这里编写你的代码
-  
+
   return result;
 }`
 
@@ -2140,7 +2163,7 @@ function solution() {
 function solution() {
   // 实现代码逻辑
   let result = 0;
-  
+
   return result;
 }`
 
@@ -2153,7 +2176,7 @@ function solution() {
       // 在光标位置插入两个空格
       const value = target.value
       target.value = value.substring(0, start) + '  ' + value.substring(end)
-      
+
       // 移动光标到插入空格后的位置
       target.selectionStart = target.selectionEnd = start + 2
     }
@@ -2468,4 +2491,4 @@ function solution() {
 :deep(.el-switch__label) {
   font-size: 12px;
 }
-</style> 
+</style>
